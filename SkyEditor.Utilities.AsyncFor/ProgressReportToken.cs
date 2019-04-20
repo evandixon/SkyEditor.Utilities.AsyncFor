@@ -63,6 +63,10 @@ namespace SkyEditor.Utilities.AsyncFor
             set
             {
                 _isCompleted = value;
+                if (value)
+                {
+                    _progress = 1;
+                }
                 RaiseCompleted();
             }
         }
