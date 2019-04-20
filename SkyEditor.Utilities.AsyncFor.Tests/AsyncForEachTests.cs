@@ -258,7 +258,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
         public async Task ReportsProgressThroughToken()
         {
             var progressToken = new ProgressReportToken();
-            var sampleData = Enumerable.Repeat(new TestClass(), 5);
+            var sampleData = Enumerable.Repeat(new TestClass(), 10);
 
             await sampleData.RunAsyncForEach(data =>
             {
@@ -267,7 +267,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
                 Assert.True(progressToken.Progress < 1);
 
                 data.Success = true;
-            }, progressReportToken: progressToken);
+            }, progressReportToken: progressToken, batchSize: 2);
 
             Assert.True(progressToken.IsCompleted);
             Assert.False(progressToken.IsIndeterminate);
@@ -335,10 +335,9 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
             Assert.Equal(1, completedCount);
 
             var distinctProgressPercentages = progressEventArgs.Select(e => e.Progress).Distinct().ToList();
-            Assert.InRange(distinctProgressPercentages.Count, 2, 3);
-            Assert.All(distinctProgressPercentages, e => Assert.InRange(e, 0, 1));
-
-            Assert.All(sampleData, data => Assert.True(data.Success));
+            Assert.InRange(distinctProgressPercentages.Count, 2, 5);
+            Assert.All(distinctProgressPercentages, p => Assert.InRange(p, 0, 1));
+            Assert.Contains(distinctProgressPercentages, p => p != 0 && p != 1);
         }
 
         private class TestClass

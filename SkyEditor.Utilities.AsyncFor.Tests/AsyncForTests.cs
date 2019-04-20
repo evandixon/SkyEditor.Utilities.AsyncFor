@@ -267,12 +267,12 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
         {
             var progressToken = new ProgressReportToken();
 
-            await AsyncFor.For(0, 6, i =>
+            await AsyncFor.For(1, 10, i =>
             {
                 Assert.False(progressToken.IsCompleted);
                 Assert.False(progressToken.IsIndeterminate);
                 Assert.True(progressToken.Progress < 1);
-            }, progressReportToken: progressToken);
+            }, progressReportToken: progressToken, batchSize: 2);
 
             Assert.True(progressToken.IsCompleted);
             Assert.False(progressToken.IsIndeterminate);
@@ -318,7 +318,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
             f.ProgressChanged += OnProgressChanged;
             f.Completed += OnCompleted;
             f.BatchSize = 2;
-            await f.RunFor(1, 5, async data =>
+            await f.RunFor(1, 10, async data =>
             {
                 await Task.CompletedTask;
             });
@@ -326,12 +326,13 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
             f.Completed -= OnCompleted;
 
 
-            Assert.Equal(5, progressEventArgs.Count);
+            Assert.Equal(10, progressEventArgs.Count);
             Assert.Equal(1, completedCount);
 
             var distinctProgressPercentages = progressEventArgs.Select(e => e.Progress).Distinct().ToList();
-            Assert.InRange(distinctProgressPercentages.Count, 2, 3);
-            Assert.All(distinctProgressPercentages, e => Assert.InRange(e, 0, 1));
+            Assert.InRange(distinctProgressPercentages.Count, 2, 10);
+            Assert.All(distinctProgressPercentages, p => Assert.InRange(p, 0, 1));
+            Assert.Contains(distinctProgressPercentages, p => p != 0 && p != 1);
         }
 
         private async Task temp()

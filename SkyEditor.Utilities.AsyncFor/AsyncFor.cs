@@ -69,13 +69,14 @@ namespace SkyEditor.Utilities.AsyncFor
         }
         int _completedTasks;
 
-        public float Progress => CompletedTasks / TotalTasks;
+        public float Progress => (float)CompletedTasks / TotalTasks;
 
         public string Message { get; set; }
 
         public bool IsIndeterminate => false;
 
         public bool IsCompleted { get; protected set; }
+        private object _isCompletedEventLock = new object();
 
         #endregion
 
@@ -84,10 +85,16 @@ namespace SkyEditor.Utilities.AsyncFor
             Interlocked.Increment(ref _completedTasks);
 
             ProgressChanged?.Invoke(this, new ProgressReportedEventArgs() { Progress = Progress, IsIndeterminate = false, Message = Message });
-            if (CompletedTasks == TotalTasks)
+            if (CompletedTasks == TotalTasks && !IsCompleted)
             {
-                IsCompleted = true;
-                Completed?.Invoke(this, new EventArgs());
+                lock(_isCompletedEventLock)
+                {
+                    if (!IsCompleted)
+                    {
+                        IsCompleted = true;
+                        Completed?.Invoke(this, new EventArgs());
+                    }
+                }
             }
         }
 
