@@ -33,12 +33,12 @@ var sampleData = new[] { 0, 1, 2, 3 };
 
 // Basic usage: print all numbers in the array
 await AsyncFor.ForEach(sampleData, data => {
-	Console.WriteLine(data);
+    Console.WriteLine(data);
 });
 
 // Extension method: available for all IEnumerable's and IEnumerable<T>'s
 await sampleData.RunAsyncForEach(data => {
-	Console.WriteLine(data);
+    Console.WriteLine(data);
 });
 ```
 
