@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
     public class AsyncForEachTests
     {
         [Fact]
-        public async Task RunsForEveryItemInCollectionWithSynchronousDelegate_StaticMethod()
+        public async Task RunsForEveryItemInGenericEnumerableWithSynchronousDelegate_ExtensionMethod()
         {
             var sampleData = Enumerable.Repeat(new TestClass(), 5);
 
@@ -25,7 +26,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
         }
 
         [Fact]
-        public async Task RunsForEveryItemInCollectionWithSynchronousDelegate_InstanceMethod()
+        public async Task RunsForEveryItemInGenericEnumerableWithSynchronousDelegate_InstanceMethod()
         {
             var sampleData = Enumerable.Repeat(new TestClass(), 5);
 
@@ -39,7 +40,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
         }
 
         [Fact]
-        public async Task RunsForEveryItemInCollectionWithAsynchronousDelegate_StaticMethod()
+        public async Task RunsForEveryItemInGenericEnumerableWithAsynchronousDelegate_ExtensionMethod()
         {
             var sampleData = Enumerable.Repeat(new TestClass(), 5);
 
@@ -53,7 +54,7 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
         }
 
         [Fact]
-        public async Task RunsForEveryItemInCollectionWithAsynchronousDelegate_InstanceMethod()
+        public async Task RunsForEveryItemInGenericEnumerableWithAsynchronousDelegate_InstanceMethod()
         {
             var sampleData = Enumerable.Repeat(new TestClass(), 5);
 
@@ -65,6 +66,33 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
             });
 
             Assert.All(sampleData, data => Assert.True(data.Success));
+        }
+
+        [Fact]
+        public async Task RunsForEveryItemInUntypedEnumerableWithSynchronousDelegate()
+        {
+            IEnumerable sampleData = Enumerable.Repeat(new TestClass(), 5);
+
+            await sampleData.RunAsyncForEach(data =>
+            {
+                (data as TestClass).Success = true;
+            });
+
+            Assert.All(sampleData.Cast<TestClass>(), data => Assert.True(data.Success));
+        }
+
+        [Fact]
+        public async Task RunsForEveryItemInUntypedEnumerableWithAsynchronousDelegate()
+        {
+            IEnumerable sampleData = Enumerable.Repeat(new TestClass(), 5);
+
+            await sampleData.RunAsyncForEach(async data =>
+            {
+                (data as TestClass).Success = true;
+                await Task.CompletedTask;
+            });
+
+            Assert.All(sampleData.Cast<TestClass>(), data => Assert.True(data.Success));
         }
 
         [Fact]

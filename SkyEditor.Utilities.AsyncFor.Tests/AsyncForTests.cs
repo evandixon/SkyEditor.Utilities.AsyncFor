@@ -334,6 +334,24 @@ namespace SkyEditor.Utilities.AsyncFor.Tests
             Assert.All(distinctProgressPercentages, e => Assert.InRange(e, 0, 1));
         }
 
+        private async Task temp()
+        {
+            var progressToken = new ProgressReportToken();
+            progressToken.ProgressChanged += (object sender, ProgressReportedEventArgs e) =>
+            {
+                Console.WriteLine($"Progress: {e.Progress * 100} %");
+            };
+            progressToken.Completed += (object sender, EventArgs e) =>
+             {
+                 Console.WriteLine("Completed!");
+             };
+
+            await AsyncFor.For(0, 10, i =>
+            {
+                Console.WriteLine(i);
+            }, progressReportToken: progressToken);
+        }
+
         private class TestClass
         {
             public bool Success { get; set; }

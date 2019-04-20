@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -406,6 +407,20 @@ namespace SkyEditor.Utilities.AsyncFor
         /// <summary>
         /// Asynchronously runs <paramref name="delegateFunction"/> for every item in the given collection
         /// </summary>
+        /// <param name="collection">The collection to be enumerated</param>
+        /// <param name="delegateFunction">The function to asynchronously run</param>
+        /// <param name="runSynchronously">Whether or not to allow running multiple tasks at once. Defaults to false.</param>
+        /// <param name="batchSize">The maximum number of tasks to run at once, or 0 or negative for no limit.</param>
+        /// <param name="progressReportToken">Optional token to receive progress updates</param>
+        /// <exception cref="InvalidOperationException">Thrown if execution starts before the end of another operation</exception>
+        public static async Task ForEach(IEnumerable collection, ForEachItemAsync<object> delegateFunction, bool runSynchronously = false, int batchSize = 0, ProgressReportToken progressReportToken = null)
+        {
+            await ForEach(collection.Cast<object>(), delegateFunction, runSynchronously, batchSize, progressReportToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously runs <paramref name="delegateFunction"/> for every item in the given collection
+        /// </summary>
         /// <typeparam name="T">Type of the collection item</typeparam>
         /// <param name="collection">The collection to be enumerated</param>
         /// <param name="delegateFunction">The function to asynchronously run</param>
@@ -414,6 +429,24 @@ namespace SkyEditor.Utilities.AsyncFor
         /// <param name="progressReportToken">Optional token to receive progress updates</param>
         /// <exception cref="InvalidOperationException">Thrown if execution starts before the end of another operation</exception>
         public static async Task ForEach<T>(IEnumerable<T> collection, ForEachItem<T> delegateSub, bool runSynchronously = false, int batchSize = 0, ProgressReportToken progressReportToken = null)
+        {
+            await ForEach(collection, i =>
+            {
+                delegateSub(i);
+                return Task.CompletedTask;
+            }, runSynchronously, batchSize, progressReportToken).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously runs <paramref name="delegateFunction"/> for every item in the given collection
+        /// </summary>
+        /// <param name="collection">The collection to be enumerated</param>
+        /// <param name="delegateFunction">The function to asynchronously run</param>
+        /// <param name="runSynchronously">Whether or not to allow running multiple tasks at once. Defaults to false.</param>
+        /// <param name="batchSize">The maximum number of tasks to run at once, or 0 or negative for no limit.</param>
+        /// <param name="progressReportToken">Optional token to receive progress updates</param>
+        /// <exception cref="InvalidOperationException">Thrown if execution starts before the end of another operation</exception>
+        public static async Task ForEach(IEnumerable collection, ForEachItem<object> delegateSub, bool runSynchronously = false, int batchSize = 0, ProgressReportToken progressReportToken = null)
         {
             await ForEach(collection, i =>
             {
