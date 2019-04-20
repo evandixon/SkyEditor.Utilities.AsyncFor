@@ -70,7 +70,7 @@ namespace SkyEditor.Utilities.AsyncFor
 
         public float Progress => CompletedTasks / TotalTasks;
 
-        public string Message => string.Empty;
+        public string Message { get; set; }
 
         public bool IsIndeterminate => false;
 
@@ -82,7 +82,7 @@ namespace SkyEditor.Utilities.AsyncFor
         {
             Interlocked.Increment(ref _completedTasks);
 
-            ProgressChanged?.Invoke(this, new ProgressReportedEventArgs() { Progress = Progress, IsIndeterminate = false });
+            ProgressChanged?.Invoke(this, new ProgressReportedEventArgs() { Progress = Progress, IsIndeterminate = false, Message = Message });
             if (CompletedTasks == TotalTasks)
             {
                 IsCompleted = true;
@@ -155,7 +155,16 @@ namespace SkyEditor.Utilities.AsyncFor
                         {
                             if (RunningTasks[count].Exception != null)
                             {
-                                exceptions.Add(RunningTasks[count].Exception);
+                                var ex = RunningTasks[count].Exception;
+                                if (ex is AggregateException aggregateEx && aggregateEx.InnerExceptions.Count == 1)
+                                {
+                                    exceptions.Add(aggregateEx.InnerExceptions.First());
+                                }
+                                else
+                                {
+                                    exceptions.Add(RunningTasks[count].Exception);
+                                }
+                                
                                 RunningTasks.RemoveAt(count);
                             }
                             else if (RunningTasks[count].IsCompleted)
@@ -212,7 +221,7 @@ namespace SkyEditor.Utilities.AsyncFor
 
             if (stepCount == 0)
             {
-                throw (new ArgumentException(Properties.Resources.AsyncFor_ErrorStepCount0, nameof(stepCount)));
+                throw (new ArgumentOutOfRangeException(Properties.Resources.AsyncFor_ErrorStepCount0, nameof(stepCount)));
             }
 
             var exceptions = new List<Exception>();
@@ -231,11 +240,23 @@ namespace SkyEditor.Utilities.AsyncFor
 
             int nextI = startValue;
 
+            bool endValueNotReached()
+            {
+                if (stepCount > 0)
+                {
+                    return nextI <= endValue;
+                }
+                else
+                {
+                    return nextI >= endValue;
+                }
+            }
+
             // While there's either more tasks to start or while there's still tasks running
-            while (nextI <= endValue || RunningTasks.Count > 0)
+            while (endValueNotReached() || RunningTasks.Count > 0)
             {
                 // Add tasks if possible
-                if (nextI <= endValue && (BatchSize < 1 || RunningTasks.Count < BatchSize))
+                if (endValueNotReached() && (BatchSize < 1 || RunningTasks.Count < BatchSize))
                 {
                     // We can run more tasks
 
@@ -272,7 +293,16 @@ namespace SkyEditor.Utilities.AsyncFor
                 {
                     if (RunningTasks[count].Exception != null)
                     {
-                        exceptions.Add(RunningTasks[count].Exception);
+                        var ex = RunningTasks[count].Exception;
+                        if (ex is AggregateException aggregateEx && aggregateEx.InnerExceptions.Count == 1)
+                        {
+                            exceptions.Add(aggregateEx.InnerExceptions.First());
+                        }
+                        else
+                        {
+                            exceptions.Add(RunningTasks[count].Exception);
+                        }
+
                         RunningTasks.RemoveAt(count);
                     }
                     else if (RunningTasks[count].IsCompleted)
