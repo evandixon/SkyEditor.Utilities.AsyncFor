@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>evandixon</Authors>
+    <Description>Run the body of a `for` or a `foreach` loop asynchronously.</Description>
+    <PackageProjectUrl>https://github.com/evandixon/SkyEditor.Utilities.AsyncFor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/evandixon/SkyEditor.Utilities.AsyncFor</RepositoryUrl>
+    <PackageLicenseExpression>https://github.com/evandixon/SkyEditor.Utilities.AsyncFor/blob/master/LICENSE</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
